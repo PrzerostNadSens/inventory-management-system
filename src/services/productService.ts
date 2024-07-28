@@ -1,4 +1,4 @@
-import { CreateProductRequestDto, ProductResponseDto } from '../dto/product';
+import { CreateProductRequestDto, ProductDto } from '../dto/product';
 
 import HttpException from '../exceptions/httpException';
 import { ProductDao } from '../dao/product.dao';
@@ -16,10 +16,10 @@ export class ProductService {
   }
   constructor(private readonly dao: ProductDao) {}
 
-  async create(resource: CreateProductRequestDto): Promise<ProductResponseDto> {
+  async create(resource: CreateProductRequestDto): Promise<ProductDto> {
     return this.dao.createProduct(resource);
   }
-  async getProductById(productId: string): Promise<ProductResponseDto> {
+  async getProductById(productId: string): Promise<ProductDto> {
     const product = await this.dao.getProductById(productId);
 
     if (!product) {
@@ -28,22 +28,33 @@ export class ProductService {
     return product;
   }
 
-  async get(): Promise<ProductResponseDto[]> {
+  async get(): Promise<ProductDto[]> {
     return this.dao.getAllProducts();
   }
 
-  async restock(productId: string): Promise<ProductResponseDto | null> {
+  async restock(productId: string): Promise<ProductDto | null> {
     await this.getProductById(productId);
 
     return this.dao.updateStock(productId, 1);
   }
 
-  async sell(productId: string): Promise<ProductResponseDto | null> {
+  async sell(productId: string): Promise<ProductDto | null> {
     const product = await this.getProductById(productId);
 
     if (product.stock <= 0) {
       throw new HttpException(StatusCodes.FORBIDDEN, `The product stock cannot decrease below zero`);
     }
     return this.dao.updateStock(productId, -1);
+  }
+
+  async updateStock(productId: string, quantity: number): Promise<ProductDto | null> {
+    const product = await this.getProductById(productId);
+
+    const newStock = product.stock + quantity;
+    if (newStock < 0) {
+      throw new HttpException(StatusCodes.FORBIDDEN, 'The product stock cannot decrease below zero');
+    }
+
+    return this.dao.updateStock(productId, quantity);
   }
 }

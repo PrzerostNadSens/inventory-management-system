@@ -1,7 +1,7 @@
 import { validateCreateProduct, validateMongoId } from '../validators/product.validate';
 
 import { Router } from 'express';
-import productsController from '../controllers/productController';
+import productController from '../controllers/productController';
 import { validate } from '../middleware/validate.middleware';
 
 const router = Router();
@@ -50,7 +50,7 @@ const router = Router();
  *
  */
 
-router.post('/', validate(validateCreateProduct), (req, res, next) => productsController.createProduct(req, res, next));
+router.post('/', validate(validateCreateProduct), (req, res, next) => productController.createProduct(req, res, next));
 
 /**
  * @swagger
@@ -92,7 +92,7 @@ router.post('/', validate(validateCreateProduct), (req, res, next) => productsCo
  *         description: Internal server error.
  */
 
-router.get('/', (req, res, next) => productsController.getProducts(req, res, next));
+router.get('/', (req, res, next) => productController.getProducts(req, res, next));
 
 /**
  * @swagger
@@ -120,7 +120,7 @@ router.get('/', (req, res, next) => productsController.getProducts(req, res, nex
  */
 
 router.post('/:id/restock', validate(validateMongoId), (req, res, next) =>
-  productsController.restockProduct(req, res, next),
+  productController.restockProduct(req, res, next),
 );
 
 /**
@@ -148,7 +148,7 @@ router.post('/:id/restock', validate(validateMongoId), (req, res, next) =>
  *         description: Internal server error.
  */
 
-router.post('/:id/sell', validate(validateMongoId), (req, res, next) => productsController.sellProduct(req, res, next));
+router.post('/:id/sell', validate(validateMongoId), (req, res, next) => productController.sellProduct(req, res, next));
 
 export default router;
 

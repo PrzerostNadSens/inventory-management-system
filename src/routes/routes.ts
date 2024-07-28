@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 
 import { StatusCodes } from 'http-status-codes';
+import orderRoutes from './orderRoutes';
 import productRoutes from './productRoutes';
 import swaggerDocs from '../docs/swagger';
 import swaggerUi from 'swagger-ui-express';
@@ -12,6 +13,7 @@ routes.get('/', (req: Request, res: Response) =>
 );
 
 routes.use('/products', productRoutes);
+routes.use('/orders', orderRoutes);
 
 routes.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 

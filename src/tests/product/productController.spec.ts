@@ -1,5 +1,5 @@
 import { app, chai, expect, sinon } from '../test.config';
-import { createProductRequest, generateManyProductResponses, productResponse } from './product.mock';
+import { createProductRequest, generateManyProduct, productResponse } from './product.mock';
 
 import { ProductService } from '../../services/productService';
 import { StatusCodes } from 'http-status-codes';
@@ -155,7 +155,7 @@ describe('Product Controller', () => {
 
   describe('GET /products', () => {
     it('should get all products', async () => {
-      const productListResponse = generateManyProductResponses(10);
+      const productListResponse = generateManyProduct(10);
       const getAllProductsStub = sinon.stub(productService, 'get').resolves(productListResponse);
 
       const response = await chai.request(app).get('/products');
@@ -173,7 +173,6 @@ describe('Product Controller', () => {
       expect(response.status).to.equal(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).to.deep.equal({
         message: 'Internal Server Error',
-        status: StatusCodes.INTERNAL_SERVER_ERROR,
       });
     });
   });
@@ -204,7 +203,6 @@ describe('Product Controller', () => {
       expect(response.status).to.equal(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).to.deep.equal({
         message: 'Internal Server Error',
-        status: StatusCodes.INTERNAL_SERVER_ERROR,
       });
     });
   });
@@ -235,7 +233,6 @@ describe('Product Controller', () => {
       expect(response.status).to.equal(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).to.deep.equal({
         message: 'Internal Server Error',
-        status: StatusCodes.INTERNAL_SERVER_ERROR,
       });
     });
   });

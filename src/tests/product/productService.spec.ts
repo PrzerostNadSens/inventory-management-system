@@ -1,5 +1,5 @@
 import { expect, sinon } from '../test.config';
-import { generateManyProductResponses, generateProductResponse } from './product.mock';
+import { generateManyProduct, generateProduct } from './product.mock';
 
 import HttpException from '../../exceptions/httpException';
 import { ProductDao } from '../../dao/product.dao';
@@ -15,7 +15,7 @@ describe('Product Service', () => {
 
   describe('addProduct', () => {
     it('should add a new product', async () => {
-      const productData = generateProductResponse();
+      const productData = generateProduct();
       const product = { ...productData, id: undefined };
 
       const createProductStub = sinon.stub(ProductDao.prototype, 'createProduct').resolves(product);
@@ -28,7 +28,7 @@ describe('Product Service', () => {
 
   describe('getAllProducts', () => {
     it('should get all products', async () => {
-      const productListResponse = generateManyProductResponses(10);
+      const productListResponse = generateManyProduct(10);
       const getAllProductsStub = sinon.stub(ProductDao.prototype, 'getAllProducts').resolves(productListResponse);
 
       const result = await productService.get();
@@ -48,7 +48,7 @@ describe('Product Service', () => {
   });
   describe('getProductById', () => {
     it('should get a product by id', async () => {
-      const product = generateProductResponse();
+      const product = generateProduct();
       const getProductByIdStub = sinon.stub(ProductDao.prototype, 'getProductById').resolves(product);
 
       const result = await productService.getProductById(product.id);
@@ -71,7 +71,7 @@ describe('Product Service', () => {
 
   describe('restock', () => {
     it('should restock a product', async () => {
-      const product = generateProductResponse();
+      const product = generateProduct();
       sinon.stub(ProductDao.prototype, 'getProductById').resolves(product);
       const restockStub = sinon.stub(ProductDao.prototype, 'updateStock').resolves(product);
 
@@ -95,7 +95,7 @@ describe('Product Service', () => {
 
   describe('sell', () => {
     it('should sell a product', async () => {
-      const product = generateProductResponse();
+      const product = generateProduct();
       sinon.stub(ProductDao.prototype, 'getProductById').resolves(product);
       const updateStockStub = sinon.stub(ProductDao.prototype, 'updateStock').resolves(product);
 
@@ -105,7 +105,7 @@ describe('Product Service', () => {
     });
 
     it('should throw a 403 error if stock is zero or less', async () => {
-      const product = generateProductResponse('fakeId', 0);
+      const product = generateProduct('fakeId', 0);
       sinon.stub(ProductDao.prototype, 'getProductById').resolves(product);
 
       try {
