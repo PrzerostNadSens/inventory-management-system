@@ -1,5 +1,5 @@
 import { app, chai, expect, sinon } from '../test.config';
-import { createProductRequest, createProductResponse } from './product.mock';
+import { createProductRequest, generateManyProductResponses, productResponse } from './product.mock';
 
 import { ProductService } from '../../services/productService';
 import { StatusCodes } from 'http-status-codes';
@@ -9,12 +9,12 @@ const productService = ProductService.getInstance();
 describe('Product Controller', () => {
   describe('POST /products', () => {
     it('should create a new product', async () => {
-      const addProductStub = sinon.stub(productService, 'create').resolves(createProductResponse);
+      const addProductStub = sinon.stub(productService, 'create').resolves(productResponse);
 
       const response = await chai.request(app).post('/products').send(createProductRequest);
 
       expect(response.status).to.equal(StatusCodes.CREATED);
-      expect(response.body).to.deep.equal(createProductResponse);
+      expect(response.body).to.deep.equal(productResponse);
       expect(addProductStub.calledOnceWith(createProductRequest)).to.be.true;
 
       addProductStub.restore();
@@ -148,6 +148,32 @@ describe('Product Controller', () => {
           expect(response).to.have.status(StatusCodes.BAD_REQUEST);
         });
       });
+    });
+  });
+
+  describe('GET /products', () => {
+    it('should get all products', async () => {
+      const productListResponse = generateManyProductResponses(10);
+      const getAllProductsStub = sinon.stub(productService, 'get').resolves(productListResponse);
+
+      const response = await chai.request(app).get('/products');
+
+      expect(response.status).to.equal(StatusCodes.OK);
+      expect(response.body).to.deep.equal(productListResponse);
+      expect(getAllProductsStub.calledOnce).to.be.true;
+
+      getAllProductsStub.restore();
+    });
+
+    it('should respond with 500 if there is an error', async () => {
+      const getAllProductsStub = sinon.stub(productService, 'get').throws(new Error('Internal Server Error'));
+
+      const response = await chai.request(app).get('/products');
+
+      expect(response.status).to.equal(StatusCodes.INTERNAL_SERVER_ERROR);
+      expect(response.body).to.deep.equal({ message: 'Internal Server Error' });
+
+      getAllProductsStub.restore();
     });
   });
 });
