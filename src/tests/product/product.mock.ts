@@ -18,20 +18,13 @@ export const productResponse: ProductResponseDto = {
   stock: faker.datatype.number({ min: 1 }),
 };
 
-export const generateProductResponse = (product?: Partial<ProductResponseDto>): ProductResponseDto => {
-  return {
-    id: new ObjectId().toString(),
-    name: faker.word.adjective(50),
-    description: faker.word.adjective(50),
-    price: faker.datatype.float({ min: 0 }),
-    stock: faker.datatype.number({ min: 1 }),
-    ...product,
-  };
-};
+export const generateProductResponse = (id?: string, stock?: number): ProductResponseDto => ({
+  id: id ?? new ObjectId().toString(),
+  name: `Product ${id}`,
+  description: 'Test Description',
+  price: 100,
+  stock: stock ?? 10,
+});
 
-export const generateManyProductResponses = (
-  count: number,
-  product?: Partial<ProductResponseDto>,
-): ProductResponseDto[] => {
-  return Array.from({ length: count }, () => generateProductResponse(product));
-};
+export const generateManyProductResponses = (count: number): ProductResponseDto[] =>
+  Array.from({ length: count }, (_, i) => generateProductResponse(`id${i}`, i * 10));

@@ -2,69 +2,53 @@ import { matchedData } from 'express-validator';
 import { CreateProductRequestDto } from '../dto/product';
 import { ProductService } from '../services/productService';
 import { StatusCodes } from 'http-status-codes';
-import responses from '../exceptions/exceptions';
 
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 
-export class ProductsController {
+export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  async createProduct(req: Request, res: Response): Promise<Response> {
+  async createProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const data = <CreateProductRequestDto>matchedData(req);
 
       const product = await this.productService.create(data);
       return res.status(StatusCodes.CREATED).send(product);
     } catch (error) {
-      return responses.sendInternalServerErrorResponse(res);
+      next(error);
     }
   }
 
-  async getProducts(req: Request, res: Response): Promise<Response> {
+  async getProducts(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const recipes = await this.productService.get();
-
       return res.status(StatusCodes.OK).send(recipes);
     } catch (error) {
-      return responses.sendInternalServerErrorResponse(res);
+      next(error);
     }
   }
 
-  async restockProduct(req: Request, res: Response): Promise<Response> {
+  async restockProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const productId = req.params.id;
-      let product = await this.productService.getProductById(productId);
-      if (!product) {
-        return responses.notFound(res, 'product');
-      }
 
-      product = await this.productService.restock(productId);
+      const product = await this.productService.restock(productId);
       return res.status(StatusCodes.OK).send(product);
     } catch (error) {
-      return responses.sendInternalServerErrorResponse(res);
+      next(error);
     }
   }
 
-  async sellProduct(req: Request, res: Response): Promise<Response> {
+  async sellProduct(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
       const productId = req.params.id;
 
-      let product = await this.productService.getProductById(productId);
-      if (!product) {
-        return responses.notFound(res, 'product');
-      }
-
-      if (product.stock <= 0) {
-        return responses.forbiddenProductStockDecrease(res);
-      }
-
-      product = await this.productService.sell(productId);
-
+      const product = await this.productService.sell(productId);
       return res.status(StatusCodes.OK).send(product);
     } catch (error) {
-      return responses.sendInternalServerErrorResponse(res);
+      next(error);
     }
   }
 }
 
-export default new ProductsController(ProductService.getInstance());
+export default new ProductController(ProductService.getInstance());

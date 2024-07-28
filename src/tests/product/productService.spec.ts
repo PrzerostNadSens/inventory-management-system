@@ -1,8 +1,10 @@
 import { expect, sinon } from '../test.config';
+import { generateManyProductResponses, generateProductResponse } from './product.mock';
 
+import HttpException from '../../exceptions/httpException';
 import { ProductDao } from '../../dao/product.dao';
 import { ProductService } from '../../services/productService';
-import { generateManyProductResponses } from './product.mock';
+import { StatusCodes } from 'http-status-codes';
 
 const productService = ProductService.getInstance();
 
@@ -13,26 +15,14 @@ describe('Product Service', () => {
 
   describe('addProduct', () => {
     it('should add a new product', async () => {
-      const productData = { name: 'Test Product', description: 'Test Description', price: 100, stock: 10 };
-      const product = { ...productData, id: 'fakeId' };
+      const productData = generateProductResponse();
+      const product = { ...productData, id: undefined };
 
       const createProductStub = sinon.stub(ProductDao.prototype, 'createProduct').resolves(product);
 
       const result = await productService.create(productData);
       expect(createProductStub.calledOnceWith(productData)).to.be.true;
       expect(result).to.deep.equal(product);
-    });
-
-    it('should throw an error if product data is invalid', async () => {
-      const invalidProductData = { name: '', description: '', price: null, stock: null };
-
-      try {
-        await productService.create(invalidProductData);
-      } catch (error) {
-        expect(error.message).to.equal(
-          'Product validation failed: name: Path `name` is required., description: Path `description` is required., price: Path `price` is required., stock: Path `stock` is required.',
-        );
-      }
     });
   });
 
@@ -53,6 +43,89 @@ describe('Product Service', () => {
         await productService.get();
       } catch (error) {
         expect(error.message).to.equal('Database error');
+      }
+    });
+  });
+  describe('getProductById', () => {
+    it('should get a product by id', async () => {
+      const product = generateProductResponse();
+      const getProductByIdStub = sinon.stub(ProductDao.prototype, 'getProductById').resolves(product);
+
+      const result = await productService.getProductById(product.id);
+      expect(getProductByIdStub.calledOnceWith(product.id)).to.be.true;
+      expect(result).to.deep.equal(product);
+    });
+
+    it('should throw a 404 error if product is not found', async () => {
+      sinon.stub(ProductDao.prototype, 'getProductById').resolves(null);
+
+      try {
+        await productService.getProductById('nonExistentId');
+      } catch (error) {
+        expect(error).to.be.instanceOf(HttpException);
+        expect(error.status).to.equal(StatusCodes.NOT_FOUND);
+        expect(error.message).to.equal('Product with this id does not exist');
+      }
+    });
+  });
+
+  describe('restock', () => {
+    it('should restock a product', async () => {
+      const product = generateProductResponse();
+      sinon.stub(ProductDao.prototype, 'getProductById').resolves(product);
+      const restockStub = sinon.stub(ProductDao.prototype, 'updateStock').resolves(product);
+
+      const result = await productService.restock(product.id);
+      expect(restockStub.calledOnceWith(product.id, 1)).to.be.true;
+      expect(result).to.deep.equal(product);
+    });
+
+    it('should throw a 404 error if product is not found during restock', async () => {
+      sinon.stub(ProductDao.prototype, 'getProductById').resolves(null);
+
+      try {
+        await productService.restock('nonExistentId');
+      } catch (error) {
+        expect(error).to.be.instanceOf(HttpException);
+        expect(error.status).to.equal(StatusCodes.NOT_FOUND);
+        expect(error.message).to.equal('Product with this id does not exist');
+      }
+    });
+  });
+
+  describe('sell', () => {
+    it('should sell a product', async () => {
+      const product = generateProductResponse();
+      sinon.stub(ProductDao.prototype, 'getProductById').resolves(product);
+      const updateStockStub = sinon.stub(ProductDao.prototype, 'updateStock').resolves(product);
+
+      const result = await productService.sell(product.id);
+      expect(updateStockStub.calledOnceWith(product.id, -1)).to.be.true;
+      expect(result).to.deep.equal(product);
+    });
+
+    it('should throw a 403 error if stock is zero or less', async () => {
+      const product = generateProductResponse('fakeId', 0);
+      sinon.stub(ProductDao.prototype, 'getProductById').resolves(product);
+
+      try {
+        await productService.sell('fakeId');
+      } catch (error) {
+        expect(error).to.be.instanceOf(HttpException);
+        expect(error.status).to.equal(StatusCodes.FORBIDDEN);
+        expect(error.message).to.equal('The product stock cannot decrease below zero');
+      }
+    });
+
+    it('should throw a 404 error if product is not found during sell', async () => {
+      sinon.stub(ProductDao.prototype, 'getProductById').resolves(null);
+
+      try {
+        await productService.sell('nonExistentId');
+      } catch (error) {
+        expect(error).to.be.instanceOf(HttpException);
+        expect(error.status).to.equal(StatusCodes.NOT_FOUND);
+        expect(error.message).to.equal('Product with this id does not exist');
       }
     });
   });

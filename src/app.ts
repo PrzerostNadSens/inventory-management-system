@@ -2,7 +2,7 @@ import connectDB from './config/db';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import errorHandler from './utils/errorHandler';
+import errorMiddleware from './middleware/error.middleware';
 import express from 'express';
 import { routes } from './routes/routes';
 
@@ -22,7 +22,7 @@ app.use(
 
 app.use(routes);
 
-app.use(errorHandler);
+app.use(errorMiddleware);
 
 connectDB();
 

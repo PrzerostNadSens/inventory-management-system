@@ -2,7 +2,7 @@ import { validateCreateProduct, validateMongoId } from '../validators/product.va
 
 import { Router } from 'express';
 import productsController from '../controllers/productController';
-import { validate } from '../utils/validate';
+import { validate } from '../middleware/validate.middleware';
 
 const router = Router();
 
@@ -50,7 +50,7 @@ const router = Router();
  *
  */
 
-router.post('/', validate(validateCreateProduct), (req, res) => productsController.createProduct(req, res));
+router.post('/', validate(validateCreateProduct), (req, res, next) => productsController.createProduct(req, res, next));
 
 /**
  * @swagger
@@ -92,7 +92,7 @@ router.post('/', validate(validateCreateProduct), (req, res) => productsControll
  *         description: Internal server error.
  */
 
-router.get('/', (req, res) => productsController.getProducts(req, res));
+router.get('/', (req, res, next) => productsController.getProducts(req, res, next));
 
 /**
  * @swagger
@@ -119,7 +119,9 @@ router.get('/', (req, res) => productsController.getProducts(req, res));
  *         description: Internal server error.
  */
 
-router.post('/:id/restock', validate(validateMongoId), (req, res) => productsController.restockProduct(req, res));
+router.post('/:id/restock', validate(validateMongoId), (req, res, next) =>
+  productsController.restockProduct(req, res, next),
+);
 
 /**
  * @swagger
@@ -146,7 +148,7 @@ router.post('/:id/restock', validate(validateMongoId), (req, res) => productsCon
  *         description: Internal server error.
  */
 
-router.post('/:id/sell', validate(validateMongoId), (req, res) => productsController.sellProduct(req, res));
+router.post('/:id/sell', validate(validateMongoId), (req, res, next) => productsController.sellProduct(req, res, next));
 
 export default router;
 

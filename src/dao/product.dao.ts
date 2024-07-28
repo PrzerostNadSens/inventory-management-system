@@ -4,9 +4,9 @@ import { Product } from '../models/product';
 
 export class ProductDao {
   async createProduct(createProductBody: CreateProductRequestDto): Promise<ProductResponseDto> {
-    const productToSave = new Product(createProductBody);
+    const productToSave = await Product.create(createProductBody);
 
-    return productToSave.save();
+    return { ...productToSave, id: productToSave._id };
   }
 
   async getProductById(productId: string): Promise<ProductResponseDto | null> {
