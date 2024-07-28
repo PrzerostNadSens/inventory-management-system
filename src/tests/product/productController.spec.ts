@@ -1,12 +1,17 @@
 import { app, chai, expect, sinon } from '../test.config';
 import { createProductRequest, generateManyProductResponses, productResponse } from './product.mock';
 
+import { ObjectId } from 'mongodb';
 import { ProductService } from '../../services/productService';
 import { StatusCodes } from 'http-status-codes';
 
 const productService = ProductService.getInstance();
 
 describe('Product Controller', () => {
+  beforeEach(() => {
+    sinon.restore();
+  });
+
   describe('POST /products', () => {
     it('should create a new product', async () => {
       const addProductStub = sinon.stub(productService, 'create').resolves(productResponse);
@@ -16,8 +21,6 @@ describe('Product Controller', () => {
       expect(response.status).to.equal(StatusCodes.CREATED);
       expect(response.body).to.deep.equal(productResponse);
       expect(addProductStub.calledOnceWith(createProductRequest)).to.be.true;
-
-      addProductStub.restore();
     });
 
     describe('product validation', () => {
@@ -161,19 +164,84 @@ describe('Product Controller', () => {
       expect(response.status).to.equal(StatusCodes.OK);
       expect(response.body).to.deep.equal(productListResponse);
       expect(getAllProductsStub.calledOnce).to.be.true;
-
-      getAllProductsStub.restore();
     });
 
     it('should respond with 500 if there is an error', async () => {
-      const getAllProductsStub = sinon.stub(productService, 'get').throws(new Error('Internal Server Error'));
+      sinon.stub(productService, 'get').throws(new Error('Internal Server Error'));
 
       const response = await chai.request(app).get('/products');
 
       expect(response.status).to.equal(StatusCodes.INTERNAL_SERVER_ERROR);
       expect(response.body).to.deep.equal({ message: 'Internal Server Error' });
+    });
+  });
 
-      getAllProductsStub.restore();
+  describe('POST /products/:id/restock', () => {
+    it('should restock a product', async () => {
+      const updateStockStub = sinon.stub(productService, 'restock').resolves(productResponse);
+      sinon.stub(productService, 'getProductById').resolves(productResponse);
+
+      const response = await chai.request(app).post(`/products/${productResponse.id}/restock`).send();
+
+      expect(response.status).to.equal(StatusCodes.OK);
+      expect(updateStockStub.calledOnceWith(productResponse.id)).to.be.true;
+    });
+
+    it('should respond with 400 if it is not validate mongo id', async () => {
+      const nonExistentProductId = 'nonexistent';
+      const response = await chai.request(app).post(`/products/${nonExistentProductId}/restock`).send();
+
+      expect(response.status).to.equal(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should respond with 404 if product is not found', async () => {
+      sinon.stub(productService, 'getProductById').resolves(null);
+
+      const nonExistentProductId = new ObjectId().toString();
+      const response = await chai.request(app).post(`/products/${nonExistentProductId}/restock`).send();
+
+      expect(response.status).to.equal(StatusCodes.NOT_FOUND);
+      expect(response.body).to.deep.equal({ message: 'The product with the given id does not exist.' });
+    });
+  });
+
+  describe('POST /products/:id/sell', () => {
+    it('should sell a product', async () => {
+      const updateStockStub = sinon.stub(productService, 'sell').resolves(productResponse);
+      sinon.stub(productService, 'getProductById').resolves(productResponse);
+
+      const response = await chai.request(app).post(`/products/${productResponse.id}/sell`).send();
+
+      expect(response.status).to.equal(StatusCodes.OK);
+      expect(updateStockStub.calledOnceWith(productResponse.id)).to.be.true;
+    });
+
+    it('should respond with 400 if it is not validate mongo id', async () => {
+      const nonExistentProductId = 'nonexistent';
+      const response = await chai.request(app).post(`/products/${nonExistentProductId}/sell`).send();
+
+      expect(response.status).to.equal(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should respond with 403 if stock cannot go below zero', async () => {
+      const updatedProduct = { ...productResponse, stock: 0 };
+      sinon.stub(productService, 'sell').resolves(updatedProduct);
+      sinon.stub(productService, 'getProductById').resolves(updatedProduct);
+
+      const response = await chai.request(app).post(`/products/${productResponse.id}/sell`).send();
+
+      expect(response.status).to.equal(StatusCodes.FORBIDDEN);
+      expect(response.body).to.deep.equal({ message: 'The product stock cannot decrease below zero' });
+    });
+
+    it('should respond with 404 if product is not found', async () => {
+      sinon.stub(productService, 'getProductById').resolves(null);
+
+      const nonExistentProductId = new ObjectId().toString();
+      const response = await chai.request(app).post(`/products/${nonExistentProductId}/sell`).send();
+
+      expect(response.status).to.equal(StatusCodes.NOT_FOUND);
+      expect(response.body).to.deep.equal({ message: 'The product with the given id does not exist.' });
     });
   });
 });

@@ -7,18 +7,20 @@ import { generateManyProductResponses } from './product.mock';
 const productService = ProductService.getInstance();
 
 describe('Product Service', () => {
+  beforeEach(() => {
+    sinon.restore();
+  });
+
   describe('addProduct', () => {
     it('should add a new product', async () => {
       const productData = { name: 'Test Product', description: 'Test Description', price: 100, stock: 10 };
-      const product = { ...productData, _id: 'fakeId' };
+      const product = { ...productData, id: 'fakeId' };
 
       const createProductStub = sinon.stub(ProductDao.prototype, 'createProduct').resolves(product);
 
       const result = await productService.create(productData);
       expect(createProductStub.calledOnceWith(productData)).to.be.true;
       expect(result).to.deep.equal(product);
-
-      createProductStub.restore();
     });
 
     it('should throw an error if product data is invalid', async () => {
@@ -42,8 +44,6 @@ describe('Product Service', () => {
       const result = await productService.get();
       expect(getAllProductsStub.calledOnce).to.be.true;
       expect(result).to.deep.equal(productListResponse);
-
-      getAllProductsStub.restore();
     });
 
     it('should throw an error if there is an issue retrieving products', async () => {
