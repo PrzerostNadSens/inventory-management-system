@@ -24,4 +24,5 @@ coverage/
 *.tgz
 *.gz
 
+.nyc_output
 
