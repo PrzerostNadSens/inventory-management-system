@@ -6,10 +6,24 @@ export class ProductDao {
   async createProduct(createProductBody: CreateProductRequestDto): Promise<ProductResponseDto> {
     const productToSave = new Product(createProductBody);
 
-    return await productToSave.save();
+    return productToSave.save();
+  }
+
+  async getProductById(productId: string): Promise<ProductResponseDto | null> {
+    return Product.findById(productId);
   }
 
   async getAllProducts(): Promise<ProductResponseDto[]> {
     return Product.find();
+  }
+
+  async updateStock(productId: string, amount: number): Promise<ProductResponseDto | null> {
+    return Product.findByIdAndUpdate(
+      productId,
+      {
+        $inc: { stock: amount },
+      },
+      { new: true },
+    );
   }
 }

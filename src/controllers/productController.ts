@@ -29,6 +29,42 @@ export class ProductsController {
       return responses.sendInternalServerErrorResponse(res);
     }
   }
+
+  async restockProduct(req: Request, res: Response): Promise<Response> {
+    try {
+      const productId = req.params.id;
+      let product = await this.productService.getProductById(productId);
+      if (!product) {
+        return responses.notFound(res, 'product');
+      }
+
+      product = await this.productService.restock(productId);
+      return res.status(StatusCodes.OK).send(product);
+    } catch (error) {
+      return responses.sendInternalServerErrorResponse(res);
+    }
+  }
+
+  async sellProduct(req: Request, res: Response): Promise<Response> {
+    try {
+      const productId = req.params.id;
+
+      let product = await this.productService.getProductById(productId);
+      if (!product) {
+        return responses.notFound(res, 'product');
+      }
+
+      if (product.stock <= 0) {
+        return responses.forbiddenProductStockDecrease(res);
+      }
+
+      product = await this.productService.sell(productId);
+
+      return res.status(StatusCodes.OK).send(product);
+    } catch (error) {
+      return responses.sendInternalServerErrorResponse(res);
+    }
+  }
 }
 
 export default new ProductsController(ProductService.getInstance());

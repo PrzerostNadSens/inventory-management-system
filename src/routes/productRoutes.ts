@@ -1,7 +1,8 @@
+import { validateCreateProduct, validateMongoId } from '../validators/product.validate';
+
 import { Router } from 'express';
 import productsController from '../controllers/productController';
 import { validate } from '../utils/validate';
-import { validateCreateProduct } from '../validators/product.validate';
 
 const router = Router();
 
@@ -92,6 +93,60 @@ router.post('/', validate(validateCreateProduct), (req, res) => productsControll
  */
 
 router.get('/', (req, res) => productsController.getProducts(req, res));
+
+/**
+ * @swagger
+ * /products/{id}/restock:
+ *   post:
+ *     tags:
+ *       - product
+ *     description: Increase the stock level of a product
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the product to restock
+ *     responses:
+ *       200:
+ *         description: Stock level updated successfully
+ *       400:
+ *         description: Validation error. Check the response body for details.
+ *       500:
+ *         description: Internal server error.
+ */
+
+router.post('/:id/restock', validate(validateMongoId), (req, res) => productsController.restockProduct(req, res));
+
+/**
+ * @swagger
+ * /products/{id}/sell:
+ *   post:
+ *     tags:
+ *       - product
+ *     description: Decrease the stock level of a product
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID of the product to sell
+ *     responses:
+ *       200:
+ *         description: Stock level updated successfully
+ *       400:
+ *         description: Validation error. Check the response body for details.
+ *       500:
+ *         description: Internal server error.
+ */
+
+router.post('/:id/sell', validate(validateMongoId), (req, res) => productsController.sellProduct(req, res));
 
 export default router;
 

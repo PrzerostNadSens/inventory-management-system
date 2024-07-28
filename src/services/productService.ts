@@ -17,8 +17,19 @@ export class ProductService {
   async create(resource: CreateProductRequestDto): Promise<ProductResponseDto> {
     return this.dao.createProduct(resource);
   }
+  async getProductById(productId: string): Promise<ProductResponseDto | null> {
+    return this.dao.getProductById(productId);
+  }
 
   async get(): Promise<ProductResponseDto[]> {
     return this.dao.getAllProducts();
+  }
+
+  async restock(productId: string): Promise<ProductResponseDto | null> {
+    return this.dao.updateStock(productId, 1);
+  }
+
+  async sell(productId: string): Promise<ProductResponseDto | null> {
+    return this.dao.updateStock(productId, -1);
   }
 }

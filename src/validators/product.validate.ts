@@ -6,7 +6,7 @@ const messageInt = 'Field must be a int';
 const messageMongoId = 'Field must by mongoId';
 const messageIsLength50 = 'Field must exceed 50 characters';
 
-const validateProductId = param('productId').isMongoId().withMessage(messageMongoId);
+const validateProductId = param('id').isMongoId().withMessage(messageMongoId);
 
 export const validateMongoId: ValidationChain[] = [validateProductId];
 
