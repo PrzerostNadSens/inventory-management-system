@@ -1,6 +1,6 @@
 import { Document, Schema, model } from 'mongoose';
 
-import { CreateProductRequestDto } from '../dto/product/createProductRequest.dto';
+import { CreateProductRequestDto } from '../dto/product';
 
 export interface ProductDocument extends CreateProductRequestDto, Document {}
 

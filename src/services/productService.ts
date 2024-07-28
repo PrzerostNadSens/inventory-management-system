@@ -1,5 +1,5 @@
-import { CreateProductRequestDto } from '../dto/product/createProductRequest.dto';
-import { CreateProductResponseDto } from '../dto/product/createProductResponse.dto';
+import { CreateProductRequestDto, ProductResponseDto } from '../dto/product';
+
 import { ProductDao } from '../dao/product.dao';
 
 export class ProductService {
@@ -14,7 +14,11 @@ export class ProductService {
   }
   constructor(private readonly dao: ProductDao) {}
 
-  async create(resource: CreateProductRequestDto): Promise<CreateProductResponseDto> {
+  async create(resource: CreateProductRequestDto): Promise<ProductResponseDto> {
     return this.dao.createProduct(resource);
+  }
+
+  async get(): Promise<ProductResponseDto[]> {
+    return this.dao.getAllProducts();
   }
 }

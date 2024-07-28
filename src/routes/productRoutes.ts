@@ -36,18 +36,62 @@ const router = Router();
  *               type: object
  *               example:
  *                 {
- *                   "name": "Krewetki",
- *                   "description": "Obiad",
- *                   "price": 2.45,
- *                   "stock": 6,
+ *                   "name": "iPhone 12",
+ *                   "description": "Latest Apple smartphone",
+ *                   "price": 999.99,
+ *                   "stock": 10,
  *                   "id": "61375660ea9b4c173094211c"
  *                 }
  *       400:
  *         description: Validation error. Check the response body for details.
+ *       500:
+ *         description: Internal server error.
  *
  */
 
 router.post('/', validate(validateCreateProduct), (req, res) => productsController.createProduct(req, res));
+
+/**
+ * @swagger
+ * /products:
+ *   get:
+ *     tags:
+ *       - product
+ *     description: displays products
+ *     produces:
+ *       - application/json
+ *
+ *     responses:
+ *       200:
+ *         description: Products
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               example:
+ *
+ *                     [
+ *                       {
+ *                       "name": "iPhone 12",
+ *                       "description": "Latest Apple smartphone",
+ *                       "price": 999.99,
+ *                       "stock": 10,
+ *                       "id": "61375660ea9b4c173094211c"
+ *                        },
+ *                       {
+ *                       "name": "iPhone 11",
+ *                       "description": "Apple smartphone",
+ *                       "price": 999,
+ *                       "stock": 1,
+ *                       "id": "6137564c173094211c60ea9b"
+ *                        }
+ *                     ]
+ *
+ *       500:
+ *         description: Internal server error.
+ */
+
+router.get('/', (req, res) => productsController.getProducts(req, res));
 
 export default router;
 

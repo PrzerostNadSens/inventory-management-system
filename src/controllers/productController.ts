@@ -1,5 +1,5 @@
 import { matchedData } from 'express-validator';
-import { CreateProductRequestDto } from '../dto/product/createProductRequest.dto';
+import { CreateProductRequestDto } from '../dto/product';
 import { ProductService } from '../services/productService';
 import { StatusCodes } from 'http-status-codes';
 import responses from '../exceptions/exceptions';
@@ -15,6 +15,16 @@ export class ProductsController {
 
       const product = await this.productService.create(data);
       return res.status(StatusCodes.CREATED).send(product);
+    } catch (error) {
+      return responses.sendInternalServerErrorResponse(res);
+    }
+  }
+
+  async getProducts(req: Request, res: Response): Promise<Response> {
+    try {
+      const recipes = await this.productService.get();
+
+      return res.status(StatusCodes.OK).send(recipes);
     } catch (error) {
       return responses.sendInternalServerErrorResponse(res);
     }
